@@ -1,9 +1,17 @@
 const http = require("http");
 const { WebSocketServer } = require("ws");
 
-const PORT = process.env.SIGNALING_PORT || 8080;
+// Priority 1: Render's default PORT variable
+// Priority 2: Your custom SIGNALING_PORT
+// Priority 3: Local fallback 8080
+const PORT = process.env.PORT || process.env.SIGNALING_PORT || 8080;
 
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+  // Simple health check for Render's zero-downtime blue-green deployments
+  res.writeHead(200);
+  res.end("Signaling Server is Live");
+});
+
 const wss = new WebSocketServer({ server });
 
 const rooms = new Map();
@@ -77,6 +85,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Signaling server running on ws://localhost:${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Signaling server running on port ${PORT}`);
 });
